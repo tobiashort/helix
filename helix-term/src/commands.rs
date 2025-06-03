@@ -486,6 +486,8 @@ impl MappableCommand {
         yank, "Yank selection",
         yank_to_clipboard, "Yank selections to clipboard",
         yank_to_primary_clipboard, "Yank selections to primary clipboard",
+        yank_with_line_numbers_to_clipboard, "Yand with line numbers to clipboard",
+        yank_with_line_numbers_to_primary_clipboard, "Yand with line numbers to primary clipboard",
         yank_joined, "Join and yank selections",
         yank_joined_to_clipboard, "Join and yank selections to clipboard",
         yank_main_selection_to_clipboard, "Yank main selection to clipboard",
@@ -4535,6 +4537,37 @@ fn yank_to_clipboard(cx: &mut Context) {
 fn yank_to_primary_clipboard(cx: &mut Context) {
     yank_impl(cx.editor, '*');
     exit_select_mode(cx);
+}
+
+fn yank_with_line_numbers_to_clipboard(cx: &mut Context) {
+    yank_with_line_numbers_impl(cx, '+');
+}
+
+fn yank_with_line_numbers_to_primary_clipboard(cx: &mut Context) {
+    yank_with_line_numbers_impl(cx, '*');
+}
+
+fn yank_with_line_numbers_impl(cx: &mut Context, register: char) {
+    let (view, doc) = current!(cx.editor);
+    let file = doc
+        .relative_path()
+        .map(|p| p.to_path_buf())
+        .unwrap_or_default();
+    let mut out = vec![];
+    out.push(format!("File:{}", file.display()));
+    let lines = get_lines(doc, view.id);
+    for line in lines.iter() {
+        let line_content = doc.text().line(*line).to_string();
+        let line_content_trimmed = line_content.trim_end();
+        let line_number = line + 1;
+        out.push(format!("{}: {}", line_number, line_content_trimmed));
+    }
+    match cx.editor.registers.write(register, out) {
+        Ok(_) => cx
+            .editor
+            .set_status(format!("yanked with line numbers to '{}'", register)),
+        Err(err) => cx.editor.set_error(err.to_string()),
+    }
 }
 
 fn yank_impl(editor: &mut Editor, register: char) {
