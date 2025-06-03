@@ -1,3 +1,24 @@
+# Patches
+
+[Yank with line numbers to clipboard](./yank_with_line_numbers_to_clipboard.patch)  
+Useful for creating snippets in documentations.  
+Looks like this:
+
+```rust
+File:helix-term/src/commands.rs
+4530: fn yank_with_line_numbers_to_clipboard(cx: &mut Context) {
+4531:     yank_with_line_numbers_impl(cx, '+');
+4532: }
+4533: 
+4534: fn yank_with_line_numbers_to_primary_clipboard(cx: &mut Context) {
+4535:     yank_with_line_numbers_impl(cx, '*');
+4536: }
+4537: 
+4538: fn yank_with_line_numbers_impl(cx: &mut Context, register: char) {
+4539:     let (view, doc) = current!(cx.editor);
+4540:     let file = doc
+```
+
 <div align="center">
 
 <h1>
